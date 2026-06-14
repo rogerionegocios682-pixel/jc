@@ -1,0 +1,1086 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JC Empreendimentos - Dashboard Logístico</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1e293b">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="JC Log">
+    <link rel="apple-touch-icon" href="WhatsApp Image 2026-06-04 at 17.25.40.jpeg">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-card: #111827;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent: #22c55e;
+            --accent-hover: #16a34a;
+            --accent-blue: #3b82f6;
+            --accent-excel: #107c41;
+            --accent-excel-hover: #0e6c38;
+            --border-color: #334155;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --gold: #f59e0b;
+            --whatsapp-color: #25d366;
+            --whatsapp-hover: #20ba5a;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: 24px;
+        }
+
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        header {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            background-color: var(--bg-secondary);
+            padding: 16px 24px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+        }
+
+        .header-logo {
+            width: 75px;
+            height: 75px;
+            object-fit: cover;
+            border-radius: 10px;
+            border: 2px solid var(--border-color);
+            background-color: #0b111e;
+        }
+
+        .header-text h1 {
+            font-size: 24px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .header-text h1 span { color: var(--accent-blue); }
+        .header-text p { color: var(--text-muted); font-size: 14px; margin-top: 2px; }
+
+        /* ABAS */
+        .tabs-nav {
+            display: flex;
+            gap: 12px;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 4px;
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            padding: 10px 20px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: 8px 8px 0 0;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tab-btn:hover {
+            color: var(--text-main);
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+
+        .tab-btn.active {
+            color: var(--accent-blue);
+            border-bottom: 3px solid var(--accent-blue);
+            background-color: rgba(59, 130, 246, 0.1);
+        }
+
+        .tab-content {
+            display: none;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .tab-content.active {
+            display: flex;
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 24px;
+        }
+
+        @media (min-width: 1280px) {
+            .main-grid { grid-template-columns: 1.2fr 0.8fr; }
+        }
+
+        .card {
+            background-color: var(--bg-secondary);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 12px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .card-title div { display: flex; align-items: center; gap: 10px; }
+        .card-title i { color: var(--accent); }
+
+        .title-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .filter-select {
+            background-color: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            outline: none;
+        }
+
+        .inputs-form {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+        }
+
+        @media (min-width: 640px) {
+            .inputs-form { grid-template-columns: 1fr 1fr; }
+        }
+
+        .input-block {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .input-block.full-width { grid-column: 1 / -1; }
+        .input-block label { font-size: 13px; font-weight: 500; color: var(--text-muted); }
+
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-wrapper span {
+            position: absolute;
+            left: 12px;
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        .input-wrapper input, .input-wrapper select {
+            width: 100%;
+            background-color: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 10px 12px;
+            padding-left: 40px;
+            color: var(--text-main);
+            font-size: 15px;
+            outline: none;
+        }
+
+        .input-wrapper input:focus, .input-wrapper select:focus { border-color: var(--accent); }
+        .input-wrapper.no-symbol input, .input-wrapper.no-symbol select { padding-left: 12px; }
+
+        /* MODAL / LOCK SCREEN */
+        .admin-lock-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 20px;
+            text-align: center;
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            gap: 20px;
+            max-width: 450px;
+            margin: 40px auto;
+        }
+        .admin-lock-screen i { font-size: 48px; color: var(--danger); }
+        .admin-lock-screen h2 { font-size: 20px; font-weight: 700; }
+        .admin-lock-screen p { color: var(--text-muted); font-size: 14px; max-width: 320px; }
+        .admin-form-box { display: flex; flex-direction: column; gap: 12px; width: 100%; max-width: 300px; margin-top: 10px; }
+        .admin-form-box input {
+            background-color: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 10px 14px;
+            border-radius: 8px;
+            outline: none;
+            font-size: 14px;
+            text-align: center;
+        }
+        .admin-form-box input:focus { border-color: var(--accent-blue); }
+        .btn-admin-login {
+            background-color: var(--accent-blue);
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        /* STATUS BADGES */
+        .badge {
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-block;
+        }
+        .badge-success { background-color: rgba(34, 197, 94, 0.2); color: #4ade80; border: 1px solid #22c55e; }
+        .badge-warning { background-color: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid #f59e0b; }
+        .badge-danger { background-color: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid #ef4444; }
+
+        /* SELEÇÃO DE MOTOBOYS */
+        .motoboys-selector-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 10px;
+            background-color: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px;
+            max-height: 120px;
+            overflow-y: auto;
+        }
+
+        .motoboy-checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            cursor: pointer;
+            background-color: var(--bg-secondary);
+            padding: 6px 10px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            user-select: none;
+            transition: all 0.2s;
+        }
+
+        .motoboy-checkbox-label input {
+            accent-color: var(--accent);
+            cursor: pointer;
+        }
+
+        .motoboy-checkbox-label:hover { border-color: var(--text-muted); }
+
+        /* GERENCIADOR DE MOTOBOYS */
+        .crud-motoboys-box { display: flex; flex-direction: column; gap: 12px; }
+        .crud-input-group { display: flex; gap: 8px; }
+        .crud-input-group input {
+            flex: 1;
+            background-color: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 8px 12px;
+            color: var(--text-main);
+            outline: none;
+        }
+        .crud-input-group input:focus { border-color: var(--accent-blue); }
+
+        .btn-add-crud {
+            background-color: var(--accent-blue);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .crud-list {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            background-color: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 10px;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+
+        .crud-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: var(--bg-secondary);
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 13px;
+        }
+
+        .crud-item button { background: none; border: none; color: var(--danger); cursor: pointer; }
+
+        /* RANKING LIST UI */
+        .ranking-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .ranking-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            padding: 12px 16px;
+            border-radius: 10px;
+            transition: transform 0.2s;
+        }
+
+        .ranking-item:hover { transform: translateX(4px); }
+
+        .ranking-left { display: flex; align-items: center; gap: 12px; }
+
+        .ranking-position {
+            font-size: 14px;
+            font-weight: 700;
+            width: 26px;
+            height: 26px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background-color: var(--bg-primary);
+            color: var(--text-muted);
+        }
+
+        .ranking-item:nth-child(1) .ranking-position { background-color: rgba(245, 158, 11, 0.2); color: var(--gold); border: 1px solid var(--gold); }
+        .ranking-item:nth-child(2) .ranking-position { background-color: rgba(148, 163, 184, 0.2); color: #e2e8f0; border: 1px solid #cbd5e1; }
+        .ranking-item:nth-child(3) .ranking-position { background-color: rgba(180, 83, 9, 0.2); color: #f59e0b; }
+
+        .ranking-name { font-size: 14px; font-weight: 600; }
+        .ranking-right { text-align: right; }
+        .ranking-count { font-size: 14px; font-weight: 700; color: var(--accent-blue); }
+        .ranking-sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+        .btn-save {
+            grid-column: 1 / -1;
+            background-color: var(--accent);
+            color: white;
+            border: none;
+            padding: 12px;
+            font-size: 15px;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: background-color 0.2s;
+        }
+
+        .btn-save:hover { background-color: var(--accent-hover); }
+
+        .action-buttons-group {
+            grid-column: 1 / -1;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+
+        @media (min-width: 640px) {
+            .action-buttons-group { grid-template-columns: 1fr 1fr; }
+        }
+
+        .btn-whatsapp {
+            background-color: var(--whatsapp-color);
+            color: white;
+            border: none;
+            padding: 12px;
+            font-size: 15px;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: background-color 0.2s;
+        }
+        .btn-whatsapp:hover { background-color: var(--whatsapp-hover); }
+        
+        .btn-excel {
+            background-color: var(--accent-excel);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            font-size: 13px;
+            font-weight: 600;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background-color 0.2s;
+        }
+        .btn-excel:hover { background-color: var(--accent-excel-hover); }
+
+        .btn-row-whatsapp {
+            background: none;
+            border: none;
+            color: var(--whatsapp-color);
+            cursor: pointer;
+            font-size: 16px;
+            margin-right: 8px;
+        }
+        .btn-row-whatsapp:hover { color: white; }
+
+        .kpi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+        .kpi-card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .kpi-card.highlight {
+            border-color: var(--accent-blue);
+            background: linear-gradient(145deg, var(--bg-card) 0%, #1e3a8a 100%);
+        }
+
+        .kpi-title {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .kpi-value { font-size: 24px; font-weight: 700; }
+
+        .table-container { overflow-x: auto; max-height: 450px; overflow-y: auto; }
+        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; }
+        th {
+            background-color: var(--bg-primary);
+            color: var(--text-muted);
+            font-weight: 600;
+            padding: 12px;
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        td { padding: 12px; border-bottom: 1px solid var(--border-color); vertical-align: top; }
+        .btn-delete { background: none; border: none; color: var(--danger); cursor: pointer; font-size: 14px; }
+        .empty-warning { text-align: center; color: var(--text-muted); padding: 32px; font-style: italic; }
+        .closing-name { display: block; font-size: 11px; color: var(--text-muted); font-weight: normal; margin-top: 2px; }
+        .motoboys-list { display: block; font-size: 11px; color: #a855f7; font-weight: 500; margin-top: 4px; }
+    </style>
+</head>
+<body>
+
+    <div class="dashboard-container">
+        
+        <header>
+            <img src="WhatsApp Image 2026-06-04 at 17.25.40.jpeg" alt="JC Empreendimentos" class="header-logo">
+            <div class="header-text">
+                <h1>JC <span>Empreendimentos</span></h1>
+                <p>Gerenciamento Logístico, Controle de Escala da Equipe e Monitoramento de Entregas.</p>
+            </div>
+        </header>
+
+        <nav class="tabs-nav">
+            <button class="tab-btn" onclick="switchTab('tab-gestao')"><i class="fa-solid fa-chart-line"></i> Custos e Fechamento Geral</button>
+            <button class="tab-btn active" onclick="switchTab('tab-motoboys')"><i class="fa-solid fa-motorcycle"></i> Área do Motoboy / Pedidos</button>
+        </nav>
+
+        <div id="admin-login-screen" class="tab-content">
+            <div class="admin-lock-screen">
+                <i class="fa-solid fa-lock"></i>
+                <h2>Área Restrita do Administrador</h2>
+                <p>Insira as credenciais de gerente para acessar o painel de custos e fechamentos da JC Empreendimentos.</p>
+                <div class="admin-form-box">
+                    <input type="text" id="admin-user-input" placeholder="Usuário">
+                    <input type="password" id="admin-pass-input" placeholder="Senha">
+                    <button class="btn-admin-login" onclick="verifyAdminAccess()">Acessar Painel</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="tab-gestao" class="tab-content">
+            <div class="main-grid">
+                <div class="card">
+                    <div class="card-title">
+                        <div><i class="fa-solid fa-calendar-day"></i> Lançamento do Dia</div>
+                    </div>
+                    
+                    <div class="inputs-form">
+                        <div class="input-block full-width">
+                            <label for="input-name">Identificação / Nome do Fechamento</label>
+                            <div class="input-wrapper no-symbol">
+                                <input type="text" id="input-name" placeholder="Ex: Turno Noite, Extra Fim de Semana">
+                            </div>
+                        </div>
+
+                        <div class="input-block full-width">
+                            <label>Selecione os Motoboys que Trabalharam Hoje</label>
+                            <div class="motoboys-selector-grid" id="checkbox-container"></div>
+                        </div>
+
+                        <div class="input-block">
+                            <label for="input-date">Data do Lançamento</label>
+                            <div class="input-wrapper no-symbol">
+                                <input type="date" id="input-date">
+                            </div>
+                        </div>
+                        
+                        <div class="input-block">
+                            <label for="input-gas">Gasolina (Valor por Dia)</label>
+                            <div class="input-wrapper">
+                                <span>R$</span>
+                                <input type="number" id="input-gas" value="25.00" step="0.50">
+                            </div>
+                        </div>
+
+                        <div class="input-block">
+                            <label for="input-q1">Qtd Entregas (Até 6km)</label>
+                            <div class="input-wrapper no-symbol">
+                                <input type="number" id="input-q1" value="10">
+                            </div>
+                        </div>
+                        <div class="input-block">
+                            <label for="input-v1">Valor por Entrega (Até 6km)</label>
+                            <div class="input-wrapper">
+                                <span>R$</span>
+                                <input type="number" id="input-v1" value="7.00" step="0.50">
+                            </div>
+                        </div>
+
+                        <div class="input-block">
+                            <label for="input-q2">Qtd Entregas (Acima de 7km)</label>
+                            <div class="input-wrapper no-symbol">
+                                <input type="number" id="input-q2" value="4">
+                            </div>
+                        </div>
+                        <div class="input-block">
+                            <label for="input-v2">Valor por Entrega (Acima de 7km)</label>
+                            <div class="input-wrapper">
+                                <span>R$</span>
+                                <input type="number" id="input-v2" value="13.50" step="0.50">
+                            </div>
+                        </div>
+
+                        <div class="input-block">
+                            <label for="input-fixed">Custo Fixo por Moto (Unitário)</label>
+                            <div class="input-wrapper">
+                                <span>R$</span>
+                                <input type="number" id="input-fixed" value="35.00" step="1">
+                            </div>
+                        </div>
+                        <div class="input-block">
+                            <label for="input-motos-count">Qtd Motos Trabalhando (Dia)</label>
+                            <div class="input-wrapper no-symbol">
+                                <input type="number" id="input-motos-count" value="0" min="0" style="border-color: var(--accent-blue); font-weight: 600;">
+                            </div>
+                        </div>
+
+                        <div class="action-buttons-group">
+                            <button class="btn-save" onclick="saveDayRow()">
+                                <i class="fa-solid fa-floppy-disk"></i> Salvar Custo no Histórico
+                            </button>
+                            <button class="btn-whatsapp" onclick="shareCurrentDayWhatsApp()">
+                                <i class="fa-brands fa-whatsapp"></i> Enviar Dados de Hoje via WhatsApp
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 24px;">
+                    <div class="card">
+                        <div class="card-title">
+                            <div><i class="fa-solid fa-users-gear"></i> Cadastrar Equipe de Motoboys</div>
+                        </div>
+                        <div class="crud-motoboys-box">
+                            <div class="crud-input-group">
+                                <input type="text" id="new-motoboy-name" placeholder="Nome do Motoboy">
+                                <button class="btn-add-crud" onclick="addMotoboyRegistry()">Adicionar</button>
+                            </div>
+                            <div class="crud-list" id="crud-motoboys-list"></div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-title">
+                            <div><i class="fa-solid fa-chart-pie"></i> Acumulado Mensal Consolidado</div>
+                        </div>
+                        <div class="kpi-grid">
+                            <div class="kpi-card highlight"><span class="kpi-title">Custo Total Acumulado</span><span class="kpi-value" id="total-mensal">R$ 0,00</span></div>
+                            <div class="kpi-card"><span class="kpi-title">Total Registros</span><span class="kpi-value" id="total-dias">0</span></div>
+                            <div class="kpi-card"><span class="kpi-title">Entregas ≤ 6km</span><span class="kpi-value" id="total-q1">0</span></div>
+                            <div class="kpi-card"><span class="kpi-title">Entregas ≥ 7km</span><span class="kpi-value" id="total-q2">0</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">
+                    <div><i class="fa-solid fa-list-check"></i> Relatório Histórico de Lançamentos Salvos</div>
+                    <button class="btn-excel" onclick="exportToExcel()"><i class="fa-solid fa-file-excel"></i> Exportar para Excel</button>
+                </div>
+                <div class="table-container">
+                    <table id="report-table">
+                        <thead>
+                            <tr>
+                                <th>Data / Identificação</th>
+                                <th>Entregas ≤ 6km</th>
+                                <th>Subtotal ≤ 6km</th>
+                                <th>Entregas ≥ 7km</th>
+                                <th>Subtotal ≥ 7km</th>
+                                <th>Custo Moto Fixo</th>
+                                <th>Total Fixo Frota</th>
+                                <th>Gasolina (Dia)</th>
+                                <th>Total Diário</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="report-body"></tbody>
+                    </table>
+                    <div id="empty-state" class="empty-warning">Nenhum custo diário salvo ainda.</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="tab-motoboys" class="tab-content active">
+            <div class="main-grid">
+                
+                <div class="card">
+                    <div class="card-title">
+                        <div><i class="fa-solid fa-square-plus"></i> Registrar Novo Pedido / Entrega</div>
+                    </div>
+                    <div class="inputs-form">
+                        <div class="input-block">
+                            <label for="order-motoboy">Motoboy Responsável</label>
+                            <div class="input-wrapper no-symbol">
+                                <select id="order-motoboy"></select>
+                            </div>
+                        </div>
+                        <div class="input-block">
+                            <label for="order-code">Código do Pedido</label>
+                            <div class="input-wrapper no-symbol">
+                                <input type="text" id="order-code" placeholder="Ex: #1024, NF-552">
+                            </div>
+                        </div>
+                        <div class="input-block">
+                            <label for="order-bairro">Bairro de Destino</label>
+                            <div class="input-wrapper no-symbol">
+                                <input type="text" id="order-bairro" placeholder="Ex: Centro, Vila Nova">
+                            </div>
+                        </div>
+                        <div class="input-block">
+                            <label for="order-fee">Valor da Taxa de Entrega</label>
+                            <div class="input-wrapper">
+                                <span>R$</span>
+                                <input type="number" id="order-fee" value="7.00" step="0.50">
+                            </div>
+                        </div>
+                        <div class="input-block full-width">
+                            <label for="order-status">Status da Entrega</label>
+                            <div class="input-wrapper no-symbol">
+                                <select id="order-status" style="border-color: var(--accent-blue); font-weight:600;">
+                                    <option value="OK">Entregue OK</option>
+                                    <option value="AUSENTE">Não encontrou o cliente</option>
+                                    <option value="CANCELADO">Cancelado</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="action-buttons-group">
+                            <button class="btn-save" onclick="saveOrderRow()" style="background-color: var(--accent-blue);">
+                                <i class="fa-solid fa-circle-check"></i> Registrar Pedido no Sistema
+                            </button>
+                            <button class="btn-whatsapp" onclick="shareCurrentOrderWhatsApp()">
+                                <i class="fa-brands fa-whatsapp"></i> Notificar Entrega no WhatsApp
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 24px;">
+                    <div class="card">
+                        <div class="card-title">
+                            <div><i class="fa-solid fa-chart-bar"></i> Resumo de Entregas (Filtrado)</div>
+                        </div>
+                        <div class="kpi-grid">
+                            <div class="kpi-card highlight"><span class="kpi-title">Total em Taxas</span><span class="kpi-value" id="kpi-order-total" style="color:#4ade80;">R$ 0,00</span></div>
+                            <div class="kpi-card"><span class="kpi-title">Entregues OK</span><span class="kpi-value" id="kpi-order-ok" style="color:#4ade80;">0</span></div>
+                            <div class="kpi-card"><span class="kpi-title">Não Encontrados</span><span class="kpi-value" id="kpi-order-ausente" style="color:#fbbf24;">0</span></div>
+                            <div class="kpi-card"><span class="kpi-title">Cancelados</span><span class="kpi-value" id="kpi-order-cancelado" style="color:#f87171;">0</span></div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-title">
+                            <div><i class="fa-solid fa-trophy" style="color:var(--gold);"></i> Ranking de Entregas Efetuadas</div>
+                        </div>
+                        <div class="ranking-container" id="ranking-list-box"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">
+                    <div><i class="fa-solid fa-motorcycle"></i> Lista Geral de Pedidos Cadastrados</div>
+                    <div class="title-actions">
+                        <select id="filter-motoboy-select" class="filter-select" onchange="renderOrdersTable(); calculateOrdersAggregates();">
+                            <option value="ALL">🔍 Todos os Motoboys</option>
+                        </select>
+                        <button class="btn-excel" onclick="exportOrdersToExcel()"><i class="fa-solid fa-file-excel"></i> Exportar Pedidos</button>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Motoboy</th>
+                                <th>Cód. Pedido</th>
+                                <th>Bairro</th>
+                                <th>Taxa</th>
+                                <th>Status da Entrega</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="orders-table-body"></tbody>
+                    </table>
+                    <div id="orders-empty-state" class="empty-warning">Nenhum pedido lançado pelos motoboys ainda.</div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        let monthlyDatabase = JSON.parse(localStorage.getItem('deliveryReportDB_v6')) || [];
+        let ordersDatabase = JSON.parse(localStorage.getItem('ordersReportDB_v1')) || [];
+        let registeredMotoboys = JSON.parse(localStorage.getItem('registeredMotoboysDB')) || ["João Silva", "Pedro Santos"];
+        
+        let isAdminAuthenticated = false;
+        const TARGET_PHONE = "558181267614"; // Seu número configurado de destino (+55 81 8126-7614)
+
+        document.getElementById('input-date').valueAsDate = new Date();
+
+        function formatCurrency(value) {
+            return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        }
+
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('data:text/javascript;base64,' + btoa(`
+                self.addEventListener('fetch', function(e) { });
+            `), { scope: './' });
+        }
+
+        function formatDate(dateString) {
+            const parts = dateString.split('-');
+            return `${parts[2]}/${parts[1]}/${parts[0]}`;
+        }
+
+        function switchTab(tabId) {
+            if (tabId === 'tab-gestao' && !isAdminAuthenticated) {
+                document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+                document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+                
+                document.getElementById('admin-login-screen').classList.add('active');
+                document.querySelector(".tabs-nav .tab-btn:nth-child(1)").classList.add('active');
+                return;
+            }
+
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            
+            document.getElementById(tabId).classList.add('active');
+            
+            if(tabId === 'tab-gestao') {
+                document.querySelector(".tabs-nav .tab-btn:nth-child(1)").classList.add('active');
+            } else {
+                document.querySelector(".tabs-nav .tab-btn:nth-child(2)").classList.add('active');
+            }
+        }
+
+        function verifyAdminAccess() {
+            const userInput = document.getElementById('admin-user-input').value.trim();
+            const passInput = document.getElementById('admin-pass-input').value;
+
+            if (userInput === 'junior' && passInput === 'Mudar@123') {
+                isAdminAuthenticated = true;
+                document.getElementById('admin-user-input').value = "";
+                document.getElementById('admin-pass-input').value = "";
+                switchTab('tab-gestao');
+            } else {
+                alert("Usuário ou Senha incorretos! Acesso negado.");
+            }
+        }
+
+        function renderMotoboysCrud() {
+            const listContainer = document.getElementById('crud-motoboys-list');
+            const selectContainer = document.getElementById('order-motoboy');
+            const filterContainer = document.getElementById('filter-motoboy-select');
+            
+            const currentFilter = filterContainer.value;
+
+            listContainer.innerHTML = "";
+            selectContainer.innerHTML = "";
+            filterContainer.innerHTML = '<option value="ALL">🔍 Todos os Motoboys</option>';
+            
+            if(registeredMotoboys.length === 0) {
+                listContainer.innerHTML = `<div style="font-size:12px; color:var(--text-muted); text-align:center; padding:10px;">Nenhum cadastrado</div>`;
+                selectContainer.innerHTML = `<option value="">Nenhum motoboy cadastrado</option>`;
+                return;
+            }
+
+            registeredMotoboys.forEach((name, index) => {
+                const div = document.createElement('div');
+                div.className = 'crud-item';
+                div.innerHTML = `<span>${name}</span><button onclick="deleteMotoboyRegistry(${index})"><i class="fa-solid fa-trash-can"></i></button>`;
+                listContainer.appendChild(div);
+
+                const opt = document.createElement('option');
+                opt.value = name;
+                opt.innerText = name;
+                selectContainer.appendChild(opt);
+
+                const optFilter = document.createElement('option');
+                optFilter.value = name;
+                optFilter.innerText = name;
+                filterContainer.appendChild(optFilter);
+            });
+
+            if(registeredMotoboys.includes(currentFilter)) {
+                filterContainer.value = currentFilter;
+            }
+        }
+
+        function addMotoboyRegistry() {
+            const input = document.getElementById('new-motoboy-name');
+            const name = input.value.trim();
+            if(!name) return;
+
+            if(registeredMotoboys.includes(name)) {
+                alert("Este motoboy já está cadastrado!");
+                return;
+            }
+
+            registeredMotoboys.push(name);
+            localStorage.setItem('registeredMotoboysDB', JSON.stringify(registeredMotoboys));
+            input.value = "";
+            
+            renderMotoboysCrud();
+            renderSelectorCheckboxes();
+            renderOrdersTable();
+            renderRanking();
+        }
+
+        function deleteMotoboyRegistry(index) {
+            registeredMotoboys.splice(index, 1);
+            localStorage.setItem('registeredMotoboysDB', JSON.stringify(registeredMotoboys));
+            renderMotoboysCrud();
+            renderSelectorCheckboxes();
+            renderOrdersTable();
+            calculateOrdersAggregates();
+            renderRanking();
+        }
+
+        function renderSelectorCheckboxes() {
+            const container = document.getElementById('checkbox-container');
+            container.innerHTML = "";
+
+            if(registeredMotoboys.length === 0) {
+                container.innerHTML = `<div style="font-size:12px; color:var(--text-muted); grid-column: 1/-1;">Cadastre motoboys primeiro.</div>`;
+                document.getElementById('input-motos-count').value = 0;
+                return;
+            }
+
+            registeredMotoboys.forEach(name => {
+                const label = document.createElement('label');
+                label.className = 'motoboy-checkbox-label';
+                label.innerHTML = `<input type="checkbox" value="${name}" onchange="updateMotosCountFromCheckboxes()"><span>${name}</span>`;
+                container.appendChild(label);
+            });
+            updateMotosCountFromCheckboxes();
+        }
+
+        function updateMotosCountFromCheckboxes() {
+            const checked = document.querySelectorAll('#checkbox-container input[type="checkbox"]:checked');
+            document.getElementById('input-motos-count').value = checked.length;
+        }
+
+        function getSelectedMotoboys() {
+            const checked = document.querySelectorAll('#checkbox-container input[type="checkbox"]:checked');
+            let list = [];
+            checked.forEach(cb => list.push(cb.value));
+            return list.length > 0 ? list.join(', ') : "Preenchido Manual / Não Listado";
+        }
+
+        function renderRanking() {
+            const container = document.getElementById('ranking-list-box');
+            container.innerHTML = "";
+
+            let stats = {};
+            registeredMotoboys.forEach(m => stats[m] = { count: 0, cash: 0 });
+
+            ordersDatabase.forEach(order => {
+                if(order.status === "OK") {
+                    if(!stats[order.motoboy]) stats[order.motoboy] = { count: 0, cash: 0 };
+                    stats[order.motoboy].count++;
+                    stats[order.motoboy].cash += order.fee;
+                }
+            });
+
+            let rankingArray = Object.keys(stats).map(name => ({ name, count: stats[name].count, cash: stats[name].cash }));
+            rankingArray.sort((a, b) => b.count - a.count || b.cash - a.cash);
+
+            if(rankingArray.length === 0 || ordersDatabase.filter(o => o.status === "OK").length === 0) {
+                container.innerHTML = `<div style="font-size:12px; color:var(--text-muted); text-align:center; padding:15px; font-style:italic;">Nenhuma entrega bem sucedida computada.</div>`;
+                return;
+            }
+
+            rankingArray.forEach((moto, i) => {
+                const item = document.createElement('div');
+                item.className = 'ranking-item';
+                item.innerHTML = `
+                    <div class="ranking-left">
+                        <div class="ranking-position">${i + 1}</div>
+                        <div class="ranking-name">${moto.name}</div>
+                    </div>
+                    <div class="ranking-right">
+                        <div class="ranking-count">${moto.count} ${moto.count === 1 ? 'Entrega' : 'Entregas'}</div>
+                        <div class="ranking-sub">Taxas: ${formatCurrency(moto.cash)}</div>
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        function saveDayRow() {
+            const nameVal = document.getElementById('input-name').value.trim() || "Fechamento Geral";
+            const dateVal = document.getElementById('input-date').value;
+            const q1 = Math.max(0, parseInt(document.getElementById('input-q1').value) || 0);
+            const v1 = Math.max(0, parseFloat(document.getElementById('input-v1').value) || 0);
+            const q2 = Math.max(0, parseInt(document.getElementById('input-q2').value) || 0);
+            const v2 = Math.max(0, parseFloat(document.getElementById('input-v2').value) || 0);
+            const fixed = Math.max(0, parseFloat(document.getElementById('input-fixed').value) || 0);
+            const motosCount = Math.max(0, parseInt(document.getElementById('input-motos-count').value) || 0);
+            const gas = Math.max(0, parseFloat(document.getElementById('input-gas').value) || 0);
+            const selectedMotoboysList = getSelectedMotoboys();
+
+            if(!dateVal) { alert("Selecione uma data válida!"); return; }
+
+            const totalFixedDay = fixed * motosCount;
+            const totalDayCost = (q1 * v1) + (q2 * v2) + totalFixedDay + gas;
+
+            const dayRecord = {
+                id: Date.now(), name: nameVal, motoboys: selectedMotoboysList, date: dateVal,
+                q1: q1, v1: v1, q2: q2, v2: v2, fixed: fixed, motosCount: motosCount,
+                totalFixedDay: totalFixedDay, gas: gas, total: totalDayCost
+            };
+
+            monthlyDatabase.push(dayRecord);
+            monthlyDatabase.sort((a, b) => new Date(b.date) - new Date(a.date));
+            localStorage.setItem('deliveryReportDB_v6', JSON.stringify(monthlyDatabase));
+
+            document.getElementById('input-name').value = "";
+            document.querySelectorAll('#checkbox-container input[type="checkbox"]').forEach(cb => cb.checked = false);
+            
+            renderTable();
+            calculateReportAggregates();
+            updateMotosCountFromCheckboxes();
+        }
+
+        function shareCurrentDayWhatsApp() {
+            const nameVal = document.getElementById('input-name').value.trim() || "Fechamento Geral";
+            const dateVal = document.getElementById('input-date').value;
+            const q1 = Math.max(0, parseInt(document.getElementById('input-q1').value) || 0);
+            const v1 = Math.max(0, parseFloat(document.getElementById('input-v1').value) || 0);
+            const q2 = Math.max(0, parseInt(document.getElementById('input-q2').value) || 0);
+            const v2 = Math.max(0, parseFloat(document.getElementById('input-v2').value) || 0);
+            const fixed = Math.max(0, parseFloat(document.getElementById('input-fixed').value) || 0);
+            const motosCount = Math.max(0, parseInt(document.getElementById('input-motos-count').value) || 0);
+            const gas = Math.max(0, parseFloat(document.getElementById('input-gas').value) || 0);
+            const motoboys = getSelectedMotoboys();
+
+            if(!dateVal) { alert("Selecione uma data válida!"); return; }
+
+            const totalFixedDay = fixed * motosCount;
+            const totalDayCost = (q1 * v1) + (q2 * v2) + totalFixedDay + gas;
+
+            const text = `📊 *JC EMPREENDIMENTOS - RELATÓRIO DIÁRIO*\n` +
+                         `📅 *Data:* ${formatDate(dateVal)}\n` +
+                         `🏷️ *Identificação:* ${nameVal}\n` +
+                         `MK️ *Motos Ativas:* ${motosCount}\n` +
+                         `👥 *Equipe:* ${motoboys}\n\n` +
+                         `▫️ *Entregas ≤ 6km:* ${q1} (Subtotal: ${formatCurrency(q1 * v1)})\n` +
+                         `▫️ *Entregas ≥ 7km:* ${q2} (Subtotal: ${formatCurrency(q2 * v2)})\n` +
+                         `▫️ *Custo Fixo Frota:* ${formatCurrency(totalFixedDay)}\n` +
+                         `▫️ *Gasolina Frota:* ${formatCurrency(gas)}\n\n` +
+                         `💰 *CUSTO TOTAL DO DIA:* *${formatCurrency(totalDayCost)}*`;
+
+            const url = `https://api.whatsapp.com/send?phone=${TARGET_PHONE}&text=${encodeURIComponent(text)}`;
+            window.open(url, '_blank');
+        }
+
+        function shareSavedRowWhatsApp(id) {
+            const item = monthlyDatabase.find(x => x.id === id);
+            if (!item) return;
+
+            const text =
