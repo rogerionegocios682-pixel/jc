@@ -860,31 +860,23 @@
   };
 </script>
     <!-- ☁️ FIREBASE CONFIG - Sincronização em Tempo Real -->
-    <script type="module">
-        import { initializeCloudSync, saveDailyCostToCloud, saveOrderToCloud, addMotoboyToCloud, deleteMotoboyFromCloud } from './integration-example.js';
-        
-    // Iniciar sincronização ao carregar página
+<script type="module">
+    import { initializeCloudSync, saveDailyCostToCloud, saveOrderToCloud, addMotoboyToCloud, deleteMotoboyFromCloud, startLiveListening } from './integration-example.js';
+    
+    // Disponibiliza as funções para o escopo global do navegador
+    window.initializeCloudSync = initializeCloudSync;
+    window.saveDailyCostToCloud = saveDailyCostToCloud;
+    window.saveOrderToCloud = saveOrderToCloud;
+    window.addMotoboyToCloud = addMotoboyToCloud;
+    window.deleteMotoboyFromCloud = deleteMotoboyFromCloud;
+    window.startLiveListening = startLiveListening;
+
     window.addEventListener('load', () => {
         initializeCloudSync();
-        updateSyncStatus('Sincronizado ✓', false);
+        startLiveListening(); // Inicia a escuta em tempo real
+        if(typeof updateSyncStatus === 'function') updateSyncStatus('Sincronizado ✓', false);
     });
-        window.saveDailyCostToCloud = saveDailyCostToCloud;
-        window.saveOrderToCloud = saveOrderToCloud;
-        window.addMotoboyToCloud = addMotoboyToCloud;
-        window.deleteMotoboyFromCloud = deleteMotoboyFromCloud;
-
-        // Status de sincronização
-        function updateSyncStatus(message, isError = false) {
-            const status = document.getElementById('sync-status');
-            status.textContent = message;
-            status.classList.toggle('error', isError);
-            // Expor funções visuais para o Firebase conseguir atualizar a tela
-    window.renderMotoboysCrud = renderMotoboysCrud;
-    window.renderSelectorCheckboxes = renderSelectorCheckboxes;
-    window.renderOrdersTable = renderOrdersTable;
-        }
-        window.updateSyncStatus = updateSyncStatus;
-    </script>
+</script>
 
     <!-- Script original (mantém toda funcionalidade) -->
     <script>
