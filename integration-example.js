@@ -52,13 +52,15 @@ export function saveOrderToCloud(order) {
 export function saveDailyCostToCloud(cost) {
     if (!db) return;
     const dbRef = ref(db, 'dailyReports');
-    // Escuta ativa para atualizar a página quando houver novos dados na nuvem
+    // (Caso houvesse mais código interno de saveDailyCost aqui, certifique-se de manter. Se era só isso:)
+}
+
+// Agora sim, a função startLiveListening totalmente fora da outra:
 export function startLiveListening() {
     if (!db) return;
-    
+
     // Quando um motoboy for adicionado por qualquer aparelho
     onChildAdded(ref(db, 'motoboys'), (snapshot) => {
-        // Recarrega a listagem local se a função global do sistema existir
         if (typeof window.carregarMotoboys === 'function') {
             window.carregarMotoboys();
         }
@@ -70,6 +72,4 @@ export function startLiveListening() {
             window.carregarPedidos();
         }
     });
-}
-    return push(dbRef, cost);
 }
