@@ -1,18 +1,23 @@
-// --- Sincronização Firebase sem módulos ---
+// Aguarda o Firebase carregar
 function initializeCloudSync() {
-    const firebaseConfig = window.__FIREBASE_CONFIG__;
-    if (!firebaseConfig) {
-        console.error('[integration-example] window.__FIREBASE_CONFIG__ não encontrada.');
+    if (typeof firebase === 'undefined') {
+        console.error('[integration-example] Firebase SDK não carregado.');
         return;
     }
-    const app = initializeApp(firebaseConfig);
-    window.db = getDatabase(app);
-    console.log('[integration-example] Firebase inicializado com sucesso.');
+    const firebaseConfig = window.__FIREBASE_CONFIG__;
+    if (!firebaseConfig) {
+        console.error('[integration-example] Configuração não encontrada.');
+        return;
+    }
+    const app = firebase.initializeApp(firebaseConfig);
+    window.db = firebase.database();
+    console.log('[integration-example] Firebase inicializado.');
 }
 
 function startLiveListening() {
     if (!window.db) return;
-    onChildAdded(ref(window.db, 'motoboys'), (snapshot) => {
+    // Usa o namespace global firebase.database
+    firebase.database().ref('motoboys').on('child_added', (snapshot) => {
         if (typeof window.renderMotoboysCrud === 'function') window.renderMotoboysCrud();
     });
 }
