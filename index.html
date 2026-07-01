@@ -861,14 +861,14 @@
 </script>
     <!-- ☁️ FIREBASE CONFIG - Sincronização em Tempo Real -->
 <script type="module">
-import { initializeCloudSync,import { initializeCloudSync, saveDailyCostToCloud, saveOrderToCloud, addMotoboyToCloud, deleteMotoboyFromCloud, startLiveListening } from './integration-example.js';
+import { initializeCloudSync, saveDailyCostToCloud, saveOrderToCloud, addMotoboyToCloud, deleteMotoboyFromCloud, startLiveListening } from './integration-example.js';
 
-// Define as funções no objeto window para que o resto do sistema as encontre
 window.initializeCloudSync = initializeCloudSync;
 window.saveDailyCostToCloud = saveDailyCostToCloud;
 window.saveOrderToCloud = saveOrderToCloud;
 window.addMotoboyToCloud = addMotoboyToCloud;
 window.deleteMotoboyFromCloud = deleteMotoboyFromCloud;
+window.startLiveListening = startLiveListening;
 window.startLiveListening = startLiveListening;
     // Inicia após carregar
     window.addEventListener('load', () => {
