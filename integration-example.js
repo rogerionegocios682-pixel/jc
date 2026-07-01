@@ -16,7 +16,7 @@ import {
 const firebaseConfig = window.__FIREBASE_CONFIG__;
 let db;
 
-export function initializeCloudSync() {
+function initializeCloudSync() {
     if (!firebaseConfig) {
         console.error('[integration-example] window.__FIREBASE_CONFIG__ não encontrada.');
         return;
@@ -27,7 +27,7 @@ export function initializeCloudSync() {
     
     // Ativa os ouvintes em tempo real
    // Escuta ativa para atualizar a página com as funções reais do sistema
-export function startLiveListening() {
+function startLiveListening() {
     if (!db) return;
 
     // Quando um motoboy for adicionado por qualquer aparelho
