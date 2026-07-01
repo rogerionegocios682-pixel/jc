@@ -16,6 +16,19 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script>
+  window.__FIREBASE_CONFIG__ = {
+    apiKey: "COLOQUE_AQUI_SUA_API_KEY_REAL",
+    authDomain: "jcempreendimentos-ea208.firebaseapp.com",
+    databaseURL: "https://jcempreendimentos-ea208-default-rtdb.firebaseio.com",
+    projectId: "jcempreendimentos-ea208",
+    storageBucket: "jcempreendimentos-ea208.appspot.com",
+    messagingSenderId: "403582280551",
+    appId: "1:403582280551:web:d27bc852d4684b713785c2",
+    measurementId: "G-2J5TSC3HEC"
+  };
+</script>
+<script type="module" src="./integration-example.js"></script>
     <style>
         :root {
             --bg-primary: #0f172a;
