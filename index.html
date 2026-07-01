@@ -860,21 +860,18 @@
   };
 </script>
     <!-- ☁️ FIREBASE CONFIG - Sincronização em Tempo Real -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
 <script src="./integration-example.js"></script>
 
 <script>
-    // Como o arquivo foi carregado acima, as funções já estão disponíveis globalmente.
     window.addEventListener('load', () => {
-        if (typeof initializeCloudSync === 'function') {
-            initializeCloudSync();
-            if (typeof startLiveListening === 'function') {
-                startLiveListening();
-                console.log('Sincronização iniciada com sucesso.');
-            }
-        } else {
-            console.error('O arquivo integration-example.js não foi carregado corretamente.');
-        }
+        initializeCloudSync();
+        startLiveListening();
+        console.log('Sincronização iniciada.');
     });
+</script>
 </script>    <!-- Script original (mantém toda funcionalidade) -->
     <script>
         let monthlyDatabase = JSON.parse(localStorage.getItem('deliveryReportDB_v6')) || [];
