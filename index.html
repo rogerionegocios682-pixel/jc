@@ -860,22 +860,17 @@
   };
 </script>
     <!-- ☁️ FIREBASE CONFIG - Sincronização em Tempo Real -->
-<script type="module">
-import { initializeCloudSync, saveDailyCostToCloud, saveOrderToCloud, addMotoboyToCloud, deleteMotoboyFromCloud, startLiveListening } from './integration-example.js';
-
-window.initializeCloudSync = initializeCloudSync;
-window.saveDailyCostToCloud = saveDailyCostToCloud;
-window.saveOrderToCloud = saveOrderToCloud;
-window.addMotoboyToCloud = addMotoboyToCloud;
-window.deleteMotoboyFromCloud = deleteMotoboyFromCloud;
-window.startLiveListening = startLiveListening;
-window.startLiveListening = startLiveListening;
-    // Inicia após carregar
+<script src="./integration-example.js"></script>
+<script>
+    // Como o arquivo agora é um script comum, as funções já estão no escopo global
     window.addEventListener('load', () => {
-        initializeCloudSync();
-        startLiveListening();
-        console.log('Sincronização iniciada com sucesso.');
+        if (typeof initializeCloudSync === 'function') {
+            initializeCloudSync();
+            startLiveListening();
+            console.log('Sincronização iniciada com sucesso.');
+        }
     });
+</script>
 </script>
 
     <!-- Script original (mantém toda funcionalidade) -->
