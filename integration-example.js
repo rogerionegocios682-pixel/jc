@@ -26,7 +26,28 @@ export function initializeCloudSync() {
     console.log('[integration-example] Firebase inicializado com sucesso.');
     
     // Ativa os ouvintes em tempo real
-    startLiveListening();
+   // Escuta ativa para atualizar a página com as funções reais do sistema
+export function startLiveListening() {
+    if (!db) return;
+
+    // Quando um motoboy for adicionado por qualquer aparelho
+    onChildAdded(ref(db, 'motoboys'), (snapshot) => {
+        // Atualiza as listas e checkboxes de motoboys na tela
+        if (typeof window.renderMotoboysCrud === 'function') {
+            window.renderMotoboysCrud();
+        }
+        if (typeof window.renderSelectorCheckboxes === 'function') {
+            window.renderSelectorCheckboxes();
+        }
+    });
+
+    // Quando um pedido for adicionado por qualquer aparelho
+    onChildAdded(ref(db, 'orders'), (snapshot) => {
+        if (typeof window.renderOrdersTable === 'function') {
+            window.renderOrdersTable();
+        }
+    });
+};
 }
 
 // --- FUNÇÕES DE EXPORTAÇÃO QUE O INDEX.HTML PROCURA ---
