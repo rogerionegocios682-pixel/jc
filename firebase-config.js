@@ -1,21 +1,28 @@
+// firebase-config.js
+// Versão segura: espera receber a configuração em window.__FIREBASE_CONFIG__
+// (injete esse objeto no HTML/host em produção). Não commit dados sensíveis.
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
-import { getDatabase, ref, set, get, onValue, push, remove, update } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js";
-import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
+import { getDatabase } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js";
+import { getAuth } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyBP1creZJ_YwNKGNq8yI3Hr3MffE4smPl4",
-  authDomain: "jcempreendimentos-ea208.firebaseapp.com",
-  databaseURL: "https://jcempreendimentos-ea208-default-rtdb.firebaseio.com",
-  projectId: "jcempreendimentos-ea208",
-  storageBucket: "jcempreendimentos-ea208.firebasestorage.app",
-  messagingSenderId: "403582280551",
-  appId: "1:403582280551:web:d27bc852d4684b713785c2",
-  measurementId: "G-2J5TSC3HEC"
+if (!window.__FIREBASE_CONFIG__) {
+  console.warn('Nenhuma configuração Firebase encontrada em window.__FIREBASE_CONFIG__. Injete as chaves no HTML em produção ou use um arquivo local não comitado.');
+}
+
+// Fallback com placeholders para facilitar leitura do repositório
+const firebaseConfig = window.__FIREBASE_CONFIG__ || {
+  apiKey: "SUA_API_KEY_AQUI",
+  authDomain: "SEU_AUTH_DOMAIN_AQUI",
+  databaseURL: "SUA_DATABASE_URL_AQUI",
+  projectId: "SEU_PROJECT_ID_AQUI",
+  storageBucket: "SEU_STORAGE_BUCKET_AQUI",
+  messagingSenderId: "SEU_MESSAGING_SENDER_ID_AQUI",
+  appId: "SEU_APP_ID_AQUI",
+  measurementId: "SEU_MEASUREMENT_ID_AQUI"
 };
 
-// Inicializar o Firebase
 const app = initializeApp(firebaseConfig);
 const database = getDatabase(app);
 const auth = getAuth(app);
 
-export { database, auth, ref, set, get, onValue, push, remove, update, signInAnonymously, onAuthStateChanged };
+export { database, auth, firebaseConfig };
