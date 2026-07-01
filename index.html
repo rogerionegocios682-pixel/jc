@@ -863,11 +863,15 @@
     <script type="module">
         import { initializeCloudSync, saveDailyCostToCloud, saveOrderToCloud, addMotoboyToCloud, deleteMotoboyFromCloud } from './integration-example.js';
         
-        // Iniciar sincronização ao carregar página
-        window.addEventListener('load', () => {
-            initializeCloudSync();
-            updateSyncStatus('Sincronizado ✓', false);
-        });
+       // Iniciar sincronização ao carregar página e escutar mudanças
+    window.addEventListener('load', () => {
+        initializeCloudSync();
+        updateSyncStatus('Sincronizado ✓', false);
+
+       // Puxar dados salvos no Firebase para a tela do sistema
+        if (typeof renderOrders === 'function') {
+            // Se o seu sistema tiver funções globais de renderização, adicione os gatilhos aqui
+        }
 
         // Expor funções para escopo global
         window.saveDailyCostToCloud = saveDailyCostToCloud;
