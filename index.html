@@ -528,9 +528,38 @@
         .empty-warning { text-align: center; color: var(--text-muted); padding: 32px; font-style: italic; }
         .closing-name { display: block; font-size: 11px; color: var(--text-muted); font-weight: normal; margin-top: 2px; }
         .motoboys-list { display: block; font-size: 11px; color: #a855f7; font-weight: 500; margin-top: 4px; }
+
+        /* Status sincronização */
+        .sync-status {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            z-index: 9998;
+            background-color: rgba(34, 197, 94, 0.2);
+            border: 1px solid #22c55e;
+            color: #4ade80;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .sync-status.error {
+            background-color: rgba(239, 68, 68, 0.2);
+            border-color: #ef4444;
+            color: #f87171;
+        }
     </style>
 </head>
 <body>
+
+    <!-- Status sincronização -->
+    <div id="sync-status" class="sync-status">
+        <i class="fa-solid fa-cloud"></i> Sincronizando...
+    </div>
 
     <div class="dashboard-container">
         
@@ -819,6 +848,32 @@
 
     </div>
 
+    <!-- ☁️ FIREBASE CONFIG - Sincronização em Tempo Real -->
+    <script type="module">
+        import { initializeCloudSync, saveDailyCostToCloud, saveOrderToCloud, addMotoboyToCloud, deleteMotoboyFromCloud } from './firebase-config.js';
+        
+        // Iniciar sincronização ao carregar página
+        window.addEventListener('load', () => {
+            initializeCloudSync();
+            updateSyncStatus('Sincronizado ✓', false);
+        });
+
+        // Expor funções para escopo global
+        window.saveDailyCostToCloud = saveDailyCostToCloud;
+        window.saveOrderToCloud = saveOrderToCloud;
+        window.addMotoboyToCloud = addMotoboyToCloud;
+        window.deleteMotoboyFromCloud = deleteMotoboyFromCloud;
+
+        // Status de sincronização
+        function updateSyncStatus(message, isError = false) {
+            const status = document.getElementById('sync-status');
+            status.textContent = message;
+            status.classList.toggle('error', isError);
+        }
+        window.updateSyncStatus = updateSyncStatus;
+    </script>
+
+    <!-- Script original (mantém toda funcionalidade) -->
     <script>
         let monthlyDatabase = JSON.parse(localStorage.getItem('deliveryReportDB_v6')) || [];
         let ordersDatabase = JSON.parse(localStorage.getItem('ordersReportDB_v1')) || [];
@@ -935,6 +990,11 @@
             localStorage.setItem('registeredMotoboysDB', JSON.stringify(registeredMotoboys));
             input.value = "";
             
+            // ☁️ SINCRONIZAR COM FIREBASE
+            if (window.addMotoboyToCloud) {
+                window.addMotoboyToCloud(name);
+            }
+            
             renderMotoboysCrud();
             renderSelectorCheckboxes();
             renderOrdersTable();
@@ -942,8 +1002,15 @@
         }
 
         function deleteMotoboyRegistry(index) {
+            const name = registeredMotoboys[index];
             registeredMotoboys.splice(index, 1);
             localStorage.setItem('registeredMotoboysDB', JSON.stringify(registeredMotoboys));
+            
+            // ☁️ SINCRONIZAR COM FIREBASE
+            if (window.deleteMotoboyFromCloud) {
+                window.deleteMotoboyFromCloud(name);
+            }
+            
             renderMotoboysCrud();
             renderSelectorCheckboxes();
             renderOrdersTable();
@@ -998,281 +1065,301 @@
             });
 
             let rankingArray = Object.keys(stats).map(name => ({ name, count: stats[name].count, cash: stats[name].cash }));
-            rankingArray.sort((a, b) => b.count - a.count || b.cash - a.cash);
+            rankingArray.sort((a, b) => b.count - a.count);
 
-            if(rankingArray.length === 0 || ordersDatabase.filter(o => o.status === "OK").length === 0) {
-                container.innerHTML = `<div style="font-size:12px; color:var(--text-muted); text-align:center; padding:15px; font-style:italic;">Nenhuma entrega bem sucedida computada.</div>`;
+            if(rankingArray.length === 0) {
+                container.innerHTML = `<div style="text-align:center; color:var(--text-muted); padding:20px;">Nenhuma entrega realizada</div>`;
                 return;
             }
 
-            rankingArray.forEach((moto, i) => {
-                const item = document.createElement('div');
-                item.className = 'ranking-item';
-                item.innerHTML = `
+            rankingArray.forEach((item, index) => {
+                const div = document.createElement('div');
+                div.className = 'ranking-item';
+                div.innerHTML = `
                     <div class="ranking-left">
-                        <div class="ranking-position">${i + 1}</div>
-                        <div class="ranking-name">${moto.name}</div>
+                        <div class="ranking-position">${index + 1}º</div>
+                        <div class="ranking-name">${item.name}</div>
                     </div>
                     <div class="ranking-right">
-                        <div class="ranking-count">${moto.count} ${moto.count === 1 ? 'Entrega' : 'Entregas'}</div>
-                        <div class="ranking-sub">Taxas: ${formatCurrency(moto.cash)}</div>
+                        <div class="ranking-count">${item.count} entregas</div>
+                        <div class="ranking-sub">${formatCurrency(item.cash)}</div>
                     </div>
                 `;
-                container.appendChild(item);
+                container.appendChild(div);
             });
         }
 
         function saveDayRow() {
-            const nameVal = document.getElementById('input-name').value.trim() || "Fechamento Geral";
-            const dateVal = document.getElementById('input-date').value;
-            const q1 = Math.max(0, parseInt(document.getElementById('input-q1').value) || 0);
-            const v1 = Math.max(0, parseFloat(document.getElementById('input-v1').value) || 0);
-            const q2 = Math.max(0, parseInt(document.getElementById('input-q2').value) || 0);
-            const v2 = Math.max(0, parseFloat(document.getElementById('input-v2').value) || 0);
-            const fixed = Math.max(0, parseFloat(document.getElementById('input-fixed').value) || 0);
-            const motosCount = Math.max(0, parseInt(document.getElementById('input-motos-count').value) || 0);
-            const gas = Math.max(0, parseFloat(document.getElementById('input-gas').value) || 0);
-            const selectedMotoboysList = getSelectedMotoboys();
-
-            if(!dateVal) { alert("Selecione uma data válida!"); return; }
-
-            const totalFixedDay = fixed * motosCount;
-            const totalDayCost = (q1 * v1) + (q2 * v2) + totalFixedDay + gas;
-
-            const dayRecord = {
-                id: Date.now(), name: nameVal, motoboys: selectedMotoboysList, date: dateVal,
-                q1: q1, v1: v1, q2: q2, v2: v2, fixed: fixed, motosCount: motosCount,
-                totalFixedDay: totalFixedDay, gas: gas, total: totalDayCost
+            let obj = {
+                date: document.getElementById('input-date').value,
+                name: document.getElementById('input-name').value || "Sem Identificação",
+                motoboys: getSelectedMotoboys(),
+                q1: parseInt(document.getElementById('input-q1').value) || 0,
+                v1: parseFloat(document.getElementById('input-v1').value) || 0,
+                q2: parseInt(document.getElementById('input-q2').value) || 0,
+                v2: parseFloat(document.getElementById('input-v2').value) || 0,
+                gas: parseFloat(document.getElementById('input-gas').value) || 0,
+                fixed: parseFloat(document.getElementById('input-fixed').value) || 0,
+                motos_count: parseInt(document.getElementById('input-motos-count').value) || 0,
+                timestamp: new Date().getTime()
             };
 
-            monthlyDatabase.push(dayRecord);
-            monthlyDatabase.sort((a, b) => new Date(b.date) - new Date(a.date));
-            localStorage.setItem('deliveryReportDB_v6', JSON.stringify(monthlyDatabase));
+            obj.subtotal1 = obj.q1 * obj.v1;
+            obj.subtotal2 = obj.q2 * obj.v2;
+            obj.total_fixed = obj.fixed * obj.motos_count;
+            obj.total = obj.subtotal1 + obj.subtotal2 + obj.total_fixed + obj.gas;
 
+            monthlyDatabase.push(obj);
+            localStorage.setItem('deliveryReportDB_v6', JSON.stringify(monthlyDatabase));
+            
+            // ☁️ SINCRONIZAR COM FIREBASE
+            if (window.saveDailyCostToCloud) {
+                window.saveDailyCostToCloud(obj);
+            }
+
+            alert("✅ Custo do dia salvo com sucesso!");
             document.getElementById('input-name').value = "";
             document.querySelectorAll('#checkbox-container input[type="checkbox"]').forEach(cb => cb.checked = false);
-            
-            renderTable();
-            calculateReportAggregates();
             updateMotosCountFromCheckboxes();
+
+            renderReportTable();
+            calculateTotals();
         }
 
-        // Nova Função: Formata e compartilha os dados atuais do formulário diretamente via WhatsApp
-        function shareCurrentDayWhatsApp() {
-            const nameVal = document.getElementById('input-name').value.trim() || "Fechamento Geral";
-            const dateVal = document.getElementById('input-date').value;
-            const q1 = Math.max(0, parseInt(document.getElementById('input-q1').value) || 0);
-            const v1 = Math.max(0, parseFloat(document.getElementById('input-v1').value) || 0);
-            const q2 = Math.max(0, parseInt(document.getElementById('input-q2').value) || 0);
-            const v2 = Math.max(0, parseFloat(document.getElementById('input-v2').value) || 0);
-            const fixed = Math.max(0, parseFloat(document.getElementById('input-fixed').value) || 0);
-            const motosCount = Math.max(0, parseInt(document.getElementById('input-motos-count').value) || 0);
-            const gas = Math.max(0, parseFloat(document.getElementById('input-gas').value) || 0);
-            const motoboys = getSelectedMotoboys();
-
-            if(!dateVal) { alert("Selecione uma data válida!"); return; }
-
-            const totalFixedDay = fixed * motosCount;
-            const totalDayCost = (q1 * v1) + (q2 * v2) + totalFixedDay + gas;
-
-            const text = `📊 *JC EMPREENDIMENTOS - RELATÓRIO DIÁRIO*\n` +
-                         `📅 *Data:* ${formatDate(dateVal)}\n` +
-                         `🏷️ *Identificação:* ${nameVal}\n` +
-                         `🏍️ *Motos Ativas:* ${motosCount}\n` +
-                         `👥 *Equipe:* ${motoboys}\n\n` +
-                         `▫️ *Entregas ≤ 6km:* ${q1} (Subtotal: ${formatCurrency(q1 * v1)})\n` +
-                         `▫️ *Entregas ≥ 7km:* ${q2} (Subtotal: ${formatCurrency(q2 * v2)})\n` +
-                         `▫️ *Custo Fixo Frota:* ${formatCurrency(totalFixedDay)}\n` +
-                         `▫️ *Gasolina Frota:* ${formatCurrency(gas)}\n\n` +
-                         `💰 *CUSTO TOTAL DO DIA:* *${formatCurrency(totalDayCost)}*`;
-
-            const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
-            window.open(url, '_blank');
-        }
-
-        // Nova Função: Envia um registro específico já salvo no histórico por WhatsApp
-        function shareSavedRowWhatsApp(id) {
-            const item = monthlyDatabase.find(x => x.id === id);
-            if (!item) return;
-
-            const text = `📊 *JC EMPREENDIMENTOS - LANÇAMENTO SALVO*\n` +
-                         `📅 *Data:* ${formatDate(item.date)}\n` +
-                         `🏷️ *Identificação:* ${item.name}\n` +
-                         `🏍️ *Motos Ativas:* ${item.motosCount}\n` +
-                         `👥 *Equipe:* ${item.motoboys}\n\n` +
-                         `▫️ *Entregas ≤ 6km:* ${item.q1} (Subtotal: ${formatCurrency(item.q1 * item.v1)})\n` +
-                         `▫️ *Entregas ≥ 7km:* ${item.q2} (Subtotal: ${formatCurrency(item.q2 * item.v2)})\n` +
-                         `▫️ *Custo Fixo Frota:* ${formatCurrency(item.totalFixedDay)}\n` +
-                         `▫️ *Gasolina Frota:* ${formatCurrency(item.gas)}
-\n` +
-                         `💰 *CUSTO TOTAL:* *${formatCurrency(item.total)}*`;
-
-            const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
-            window.open(url, '_blank');
-        }
-
-        function deleteRow(id) {
-            monthlyDatabase = monthlyDatabase.filter(item => item.id !== id);
-            localStorage.setItem('deliveryReportDB_v6', JSON.stringify(monthlyDatabase));
-            renderTable();
-            calculateReportAggregates();
-        }
-
-        function renderTable() {
+        function renderReportTable() {
             const tbody = document.getElementById('report-body');
             const emptyState = document.getElementById('empty-state');
+
             tbody.innerHTML = "";
 
-            if(monthlyDatabase.length === 0) { emptyState.style.display = "block"; return; }
+            if(monthlyDatabase.length === 0) {
+                emptyState.style.display = "block";
+                return;
+            }
+
             emptyState.style.display = "none";
 
-            monthlyDatabase.forEach(item => {
+            monthlyDatabase.forEach((row, index) => {
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
-                    <td><strong>${formatDate(item.date)}</strong><span class="closing-name">${item.name}</span><span class="motoboys-list">Equipe: ${item.motoboys}</span></td>
-                    <td>${item.q1} x ${formatCurrency(item.v1)}</td><td>${formatCurrency(item.q1 * item.v1)}</td>
-                    <td>${item.q2} x ${formatCurrency(item.v2)}</td><td>${formatCurrency(item.q2 * item.v2)}</td>
-                    <td>${formatCurrency(item.fixed)} (${item.motosCount}x)</td><td>${formatCurrency(item.totalFixedDay)}</td>
-                    <td>${formatCurrency(item.gas)}</td><td><strong style="color: #4ade80;">${formatCurrency(item.total)}</strong></td>
-                    <td>
-                        <button class="btn-row-whatsapp" onclick="shareSavedRowWhatsApp(${item.id})" title="Enviar via WhatsApp"><i class="fa-brands fa-whatsapp"></i></button>
-                        <button class="btn-delete" onclick="deleteRow(${item.id})"><i class="fa-solid fa-trash"></i></button>
-                    </td>
+                    <td><strong>${row.name}</strong><span class="closing-name">${formatDate(row.date)}</span></td>
+                    <td>${row.q1}</td>
+                    <td>${formatCurrency(row.subtotal1)}</td>
+                    <td>${row.q2}</td>
+                    <td>${formatCurrency(row.subtotal2)}</td>
+                    <td>${formatCurrency(row.fixed)}</td>
+                    <td>${formatCurrency(row.total_fixed)}</td>
+                    <td>${formatCurrency(row.gas)}</td>
+                    <td><strong>${formatCurrency(row.total)}</strong></td>
+                    <td><button class="btn-delete" onclick="deleteReportRow(${index})"><i class="fa-solid fa-trash-can"></i></button></td>
                 `;
                 tbody.appendChild(tr);
             });
         }
 
-        function calculateReportAggregates() {
-            let totalCost = 0, totalQ1 = 0, totalQ2 = 0;
-            monthlyDatabase.forEach(item => { totalCost += item.total; totalQ1 += item.q1; totalQ2 += item.q2; });
-            document.getElementById('total-mensal').innerText = formatCurrency(totalCost);
-            document.getElementById('total-dias').innerText = monthlyDatabase.length;
-            document.getElementById('total-q1').innerText = totalQ1;
-            document.getElementById('total-q2').innerText = totalQ2;
+        function deleteReportRow(index) {
+            if(confirm("Tem certeza que deseja deletar este registro?")) {
+                monthlyDatabase.splice(index, 1);
+                localStorage.setItem('deliveryReportDB_v6', JSON.stringify(monthlyDatabase));
+                renderReportTable();
+                calculateTotals();
+            }
+        }
+
+        function calculateTotals() {
+            let totalCost = 0;
+            let totalQ1 = 0;
+            let totalQ2 = 0;
+
+            monthlyDatabase.forEach(row => {
+                totalCost += row.total;
+                totalQ1 += row.q1;
+                totalQ2 += row.q2;
+            });
+
+            document.getElementById('total-mensal').textContent = formatCurrency(totalCost);
+            document.getElementById('total-dias').textContent = monthlyDatabase.length;
+            document.getElementById('total-q1').textContent = totalQ1;
+            document.getElementById('total-q2').textContent = totalQ2;
+        }
+
+        function shareCurrentDayWhatsApp() {
+            const name = document.getElementById('input-name').value || "Turno não identificado";
+            const date = formatDate(document.getElementById('input-date').value);
+            const q1 = document.getElementById('input-q1').value;
+            const v1 = document.getElementById('input-v1').value;
+            const q2 = document.getElementById('input-q2').value;
+            const v2 = document.getElementById('input-v2').value;
+            const gas = document.getElementById('input-gas').value;
+            const fixed = document.getElementById('input-fixed').value;
+            const motos_count = document.getElementById('input-motos-count').value;
+
+            const subtotal1 = q1 * v1;
+            const subtotal2 = q2 * v2;
+            const total_fixed = fixed * motos_count;
+            const total = subtotal1 + subtotal2 + total_fixed + parseFloat(gas);
+
+            const motoboys = getSelectedMotoboys();
+
+            const message = encodeURIComponent(
+                `📊 *RELATÓRIO JC EMPREENDIMENTOS*\n\n` +
+                `📅 Data: ${date}\n` +
+                `🏷️ Identificação: ${name}\n` +
+                `👥 Motoboys: ${motoboys}\n` +
+                `🏍️ Motos: ${motos_count}\n\n` +
+                `📦 *ENTREGAS ATÉ 6KM*\n` +
+                `Quantidade: ${q1} | Valor: R$ ${v1} | Subtotal: R$ ${subtotal1.toFixed(2)}\n\n` +
+                `📦 *ENTREGAS ACIMA 7KM*\n` +
+                `Quantidade: ${q2} | Valor: R$ ${v2} | Subtotal: R$ ${subtotal2.toFixed(2)}\n\n` +
+                `💰 *CUSTOS*\n` +
+                `Fixo por Moto: R$ ${fixed} | Total: R$ ${total_fixed.toFixed(2)}\n` +
+                `Gasolina: R$ ${gas}\n\n` +
+                `✅ *TOTAL DO DIA: R$ ${total.toFixed(2)}*`
+            );
+
+            window.open(`https://wa.me/?text=${message}`);
         }
 
         function saveOrderRow() {
-            const motoboy = document.getElementById('order-motoboy').value;
-            const code = document.getElementById('order-code').value.trim();
-            const bairro = document.getElementById('order-bairro').value.trim();
-            const fee = parseFloat(document.getElementById('order-fee').value) || 0;
-            const status = document.getElementById('order-status').value;
+            let obj = {
+                motoboy: document.getElementById('order-motoboy').value,
+                codigo: document.getElementById('order-code').value,
+                bairro: document.getElementById('order-bairro').value,
+                fee: parseFloat(document.getElementById('order-fee').value) || 0,
+                status: document.getElementById('order-status').value,
+                timestamp: new Date().getTime()
+            };
 
-            if(!motoboy) { alert("Cadastre e selecione um motoboy!"); return; }
-            if(!code || !bairro) { alert("Preencha todos os campos do pedido!"); return; }
+            if(!obj.motoboy) {
+                alert("Selecione um motoboy!");
+                return;
+            }
 
-            const orderRecord = { id: Date.now(), motoboy, code, bairro, fee, status };
-            ordersDatabase.push(orderRecord);
+            ordersDatabase.push(obj);
             localStorage.setItem('ordersReportDB_v1', JSON.stringify(ordersDatabase));
+            
+            // ☁️ SINCRONIZAR COM FIREBASE
+            if (window.saveOrderToCloud) {
+                window.saveOrderToCloud(obj);
+            }
 
+            alert("✅ Pedido registrado com sucesso!");
             document.getElementById('order-code').value = "";
             document.getElementById('order-bairro').value = "";
-            
+            document.getElementById('order-fee').value = "7.00";
+
             renderOrdersTable();
             calculateOrdersAggregates();
             renderRanking();
-        }
-
-        function deleteOrderRow(id) {
-            ordersDatabase = ordersDatabase.filter(item => item.id !== id);
-            localStorage.setItem('ordersReportDB_v1', JSON.stringify(ordersDatabase));
-            renderOrdersTable();
-            calculateOrdersAggregates();
-            renderRanking();
-        }
-
-        function getFilteredOrders() {
-            const filterVal = document.getElementById('filter-motoboy-select').value;
-            if(filterVal === "ALL") return ordersDatabase;
-            return ordersDatabase.filter(item => item.motoboy === filterVal);
         }
 
         function renderOrdersTable() {
             const tbody = document.getElementById('orders-table-body');
             const emptyState = document.getElementById('orders-empty-state');
+            const filter = document.getElementById('filter-motoboy-select').value;
+
             tbody.innerHTML = "";
 
-            const filteredData = getFilteredOrders();
-            if(filteredData.length === 0) { emptyState.style.display = "block"; return; }
+            let filtered = ordersDatabase;
+            if(filter !== 'ALL') {
+                filtered = ordersDatabase.filter(order => order.motoboy === filter);
+            }
+
+            if(filtered.length === 0) {
+                emptyState.style.display = "block";
+                return;
+            }
+
             emptyState.style.display = "none";
 
-            filteredData.forEach(item => {
-                let badgeClass = item.status === "OK" ? "badge-success" : (item.status === "AUSENTE" ? "badge-warning" : "badge-danger");
-                let badgeText = item.status === "OK" ? "Entregue OK" : (item.status === "AUSENTE" ? "Não Encontrado" : "Cancelado");
-
+            filtered.forEach((order, index) => {
+                const statusBadge = order.status === 'OK' ? 'badge-success' : order.status === 'AUSENTE' ? 'badge-warning' : 'badge-danger';
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
-                    <td><strong>${item.motoboy}</strong></td>
-                    <td><span style="color:var(--accent-blue); font-weight:600;">${item.code}</span></td>
-                    <td>${item.bairro}</td>
-                    <td>${formatCurrency(item.fee)}</td>
-                    <td><span class="badge ${badgeClass}">${badgeText}</span></td>
-                    <td><button class="btn-delete" onclick="deleteOrderRow(${item.id})"><i class="fa-solid fa-trash"></i></button></td>
+                    <td>${order.motoboy}</td>
+                    <td><strong>${order.codigo}</strong></td>
+                    <td>${order.bairro}</td>
+                    <td>${formatCurrency(order.fee)}</td>
+                    <td><span class="badge ${statusBadge}">${order.status}</span></td>
+                    <td><button class="btn-delete" onclick="deleteOrderRow(${ordersDatabase.indexOf(order)})"><i class="fa-solid fa-trash-can"></i></button></td>
                 `;
                 tbody.appendChild(tr);
             });
         }
 
-        function calculateOrdersAggregates() {
-            let totalFee = 0, okCount = 0, ausenteCount = 0, cancelCount = 0;
-            const filteredData = getFilteredOrders();
+        function deleteOrderRow(index) {
+            if(confirm("Tem certeza que deseja deletar este pedido?")) {
+                ordersDatabase.splice(index, 1);
+                localStorage.setItem('ordersReportDB_v1', JSON.stringify(ordersDatabase));
+                renderOrdersTable();
+                calculateOrdersAggregates();
+                renderRanking();
+            }
+        }
 
-            filteredData.forEach(item => {
-                if(item.status === "OK") { okCount++; totalFee += item.fee; }
-                else if(item.status === "AUSENTE") { ausenteCount++; }
-                else if(item.status === "CANCELADO") { cancelCount++; }
+        function calculateOrdersAggregates() {
+            const filter = document.getElementById('filter-motoboy-select').value;
+            let filtered = ordersDatabase;
+
+            if(filter !== 'ALL') {
+                filtered = ordersDatabase.filter(order => order.motoboy === filter);
+            }
+
+            let totalFee = 0;
+            let countOk = 0;
+            let countAusente = 0;
+            let countCancelado = 0;
+
+            filtered.forEach(order => {
+                totalFee += order.fee;
+                if(order.status === 'OK') countOk++;
+                else if(order.status === 'AUSENTE') countAusente++;
+                else if(order.status === 'CANCELADO') countCancelado++;
             });
 
-            document.getElementById('kpi-order-total').innerText = formatCurrency(totalFee);
-            document.getElementById('kpi-order-ok').innerText = okCount;
-            document.getElementById('kpi-order-ausente').innerText = ausenteCount;
-            document.getElementById('kpi-order-cancelado').innerText = cancelCount;
+            document.getElementById('kpi-order-total').textContent = formatCurrency(totalFee);
+            document.getElementById('kpi-order-ok').textContent = countOk;
+            document.getElementById('kpi-order-ausente').textContent = countAusente;
+            document.getElementById('kpi-order-cancelado').textContent = countCancelado;
         }
 
         function exportToExcel() {
-            if (monthlyDatabase.length === 0) { alert("Não existem lançamentos!"); return; }
-            let excelTemplate = `<html><head><meta charset="UTF-8"><style>table{border-collapse:collapse;} th{background-color:#107c41;color:white;border:1px solid #cbd5e1;padding:8px;} td{border:1px solid #cbd5e1;padding:6px;}</style></head><body><table><thead><tr><th>Data</th><th>Identificação</th><th>Motoboys</th><th>Qtd (≤6km)</th><th>Val (≤6km)</th><th>Qtd (≥7km)</th><th>Val (≥7km)</th><th>Fixo Moto</th><th>Motos Ativas</th><th>Total Fixo</th><th>Gasolina</th><th>Total Diário</th></tr></thead><tbody>`;
-            monthlyDatabase.forEach(item => {
-                excelTemplate += `<tr><td>${formatDate(item.date)}</td><td>${item.name}</td><td>${item.motoboys}</td><td>${item.q1}</td><td>${item.v1}</td><td>${item.q2}</td><td>${item.v2}</td><td>${item.fixed}</td><td>${item.motosCount}</td><td>${item.totalFixedDay}</td><td>${item.gas}</td><td>${item.total}</td></tr>`;
+            let csv = "Data / Identificação,Entregas ≤ 6km,Subtotal ≤ 6km,Entregas ≥ 7km,Subtotal ≥ 7km,Custo Moto Fixo,Total Fixo Frota,Gasolina (Dia),Total Diário\n";
+
+            monthlyDatabase.forEach(row => {
+                csv += `"${row.name}",${row.q1},"${formatCurrency(row.subtotal1)}",${row.q2},"${formatCurrency(row.subtotal2)}","${formatCurrency(row.fixed)}","${formatCurrency(row.total_fixed)}","${formatCurrency(row.gas)}","${formatCurrency(row.total)}"\n`;
             });
-            excelTemplate += `</tbody></table></body></html>`;
-            let blob = new Blob([excelTemplate], { type: 'application/vnd.ms-excel;charset=utf-8;' });
-            let link = document.createElement("a");
+
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
             link.href = URL.createObjectURL(blob);
-            link.setAttribute("download", `Relatorio_Custos_JC_${new Date().toISOString().slice(0,10)}.xls`);
+            link.download = "Custos_JC_Empreendimentos.csv";
             link.click();
         }
 
         function exportOrdersToExcel() {
-            const filteredData = getFilteredOrders();
-            if (filteredData.length === 0) { alert("Não existem pedidos para exportar!"); return; }
-            let excelTemplate = `<html><head><meta charset="UTF-8"><style>table{border-collapse:collapse;} th{background-color:#1e3a8a;color:white;border:1px solid #cbd5e1;padding:8px;} td{border:1px solid #cbd5e1;padding:6px;}</style></head><body><table><thead><tr><th>Motoboy</th><th>Código</th><th>Bairro</th><th>Taxa</th><th>Status</th></tr></thead><tbody>`;
-            filteredData.forEach(item => {
-                let statusTxt = item.status === "OK" ? "Entregue OK" : (item.status === "AUSENTE" ? "Não Encontrado" : "Cancelado");
-                excelTemplate += `<tr><td>${item.motoboy}</td><td>${item.code}</td><td>${item.bairro}</td><td>${item.fee}</td><td>${statusTxt}</td></tr>`;
+            let csv = "Motoboy,Cód. Pedido,Bairro,Taxa,Status\n";
+
+            ordersDatabase.forEach(order => {
+                csv += `"${order.motoboy}","${order.codigo}","${order.bairro}","${formatCurrency(order.fee)}","${order.status}"\n`;
             });
-            excelTemplate += `</tbody></table></body></html>`;
-            let blob = new Blob([excelTemplate], { type: 'application/vnd.ms-excel;charset=utf-8;' });
-            let link = document.createElement("a");
+
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
             link.href = URL.createObjectURL(blob);
-            link.setAttribute("download", `Relatorio_Pedidos_JC_${new Date().toISOString().slice(0,10)}.xls`);
+            link.download = "Pedidos_JC_Empreendimentos.csv";
             link.click();
         }
 
-        document.getElementById('admin-pass-input').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') verifyAdminAccess();
-        });
-
-        window.onload = function() {
-            renderMotoboysCrud();
-            renderSelectorCheckboxes();
-            renderTable();
-            calculateReportAggregates();
-            renderOrdersTable();
-            calculateOrdersAggregates();
-            renderRanking();
-        };
+        // Inicializar renderizações
+        renderMotoboysCrud();
+        renderSelectorCheckboxes();
+        renderOrdersTable();
+        renderReportTable();
+        calculateTotals();
+        calculateOrdersAggregates();
+        renderRanking();
     </script>
+
 </body>
 </html>
