@@ -24,6 +24,9 @@ export function initializeCloudSync() {
     const app = initializeApp(firebaseConfig);
     db = getDatabase(app);
     console.log('[integration-example] Firebase inicializado com sucesso.');
+    
+    // Ativa os ouvintes em tempo real
+    startLiveListening();
 }
 
 // --- FUNÇÕES DE EXPORTAÇÃO QUE O INDEX.HTML PROCURA ---
