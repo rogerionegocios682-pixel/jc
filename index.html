@@ -878,6 +878,10 @@
             const status = document.getElementById('sync-status');
             status.textContent = message;
             status.classList.toggle('error', isError);
+            // Expor funções visuais para o Firebase conseguir atualizar a tela
+    window.renderMotoboysCrud = renderMotoboysCrud;
+    window.renderSelectorCheckboxes = renderSelectorCheckboxes;
+    window.renderOrdersTable = renderOrdersTable;
         }
         window.updateSyncStatus = updateSyncStatus;
     </script>
