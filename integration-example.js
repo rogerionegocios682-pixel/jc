@@ -27,7 +27,7 @@ export function initializeCloudSync() {
     
     // Ativa os ouvintes em tempo real
    // Escuta ativa para atualizar a página com as funções reais do sistema
-function startLiveListening() {
+export function startLiveListening() {
     if (!db) return;
 
     // Quando um motoboy for adicionado por qualquer aparelho
@@ -52,32 +52,32 @@ function startLiveListening() {
 
 // --- FUNÇÕES DE EXPORTAÇÃO QUE O INDEX.HTML PROCURA ---
 
-function addMotoboyToCloud(motoboy) {
+export function addMotoboyToCloud(motoboy) {
     if (!db) return;
     const dbRef = ref(db, 'motoboys');
     return push(dbRef, motoboy);
 }
 
-function deleteMotoboyFromCloud(id) {
+export function deleteMotoboyFromCloud(id) {
     if (!db) return;
     const dbRef = ref(db, `motoboys/${id}`);
     return remove(dbRef);
 }
 
-function saveOrderToCloud(order) {
+export function saveOrderToCloud(order) {
     if (!db) return;
     const dbRef = ref(db, 'orders');
     return push(dbRef, order);
 }
 
-function saveDailyCostToCloud(cost) {
+export function saveDailyCostToCloud(cost) {
     if (!db) return;
     const dbRef = ref(db, 'dailyReports');
     // (Caso houvesse mais código interno de saveDailyCost aqui, certifique-se de manter. Se era só isso:)
 }
 
 // Agora sim, a função startLiveListening totalmente fora da outra:
-function startLiveListening() {
+export function startLiveListening() {
     if (!db) return;
 
     // Quando um motoboy for adicionado por qualquer aparelho
