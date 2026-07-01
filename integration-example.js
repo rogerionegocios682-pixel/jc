@@ -49,5 +49,24 @@ export function saveOrderToCloud(order) {
 export function saveDailyCostToCloud(cost) {
     if (!db) return;
     const dbRef = ref(db, 'dailyReports');
+    // Escuta ativa para atualizar a página quando houver novos dados na nuvem
+export function startLiveListening() {
+    if (!db) return;
+    
+    // Quando um motoboy for adicionado por qualquer aparelho
+    onChildAdded(ref(db, 'motoboys'), (snapshot) => {
+        // Recarrega a listagem local se a função global do sistema existir
+        if (typeof window.carregarMotoboys === 'function') {
+            window.carregarMotoboys();
+        }
+    });
+
+    // Quando um pedido for adicionado por qualquer aparelho
+    onChildAdded(ref(db, 'orders'), (snapshot) => {
+        if (typeof window.carregarPedidos === 'function') {
+            window.carregarPedidos();
+        }
+    });
+}
     return push(dbRef, cost);
 }
